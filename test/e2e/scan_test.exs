@@ -82,6 +82,40 @@ defmodule SobelowTest.E2E.ScanTest do
   end
 
   describe "output formats" do
+    test "github emits workflow annotations with confidence in the message" do
+      temp_fixture_file(
+        "basic",
+        "lib/basic_web/controllers/annotated,finding_controller.ex",
+        """
+        defmodule BasicWeb.AnnotatedFindingController do
+          def show(conn, %{"path" => path}), do: send_file(conn, 200, path)
+        end
+        """
+      )
+
+      {stdout, _stderr} = scan_io("basic", format: "github")
+
+      assert stdout =~
+               ~r/^::warning file=.*page_controller\.ex,line=5,endLine=5,col=\d+::Sobelow: Traversal\.SendFile: Directory Traversal in `send_file` \(high confidence\)$/m
+    end
+
+    test "github emits annotations for findings without a line number" do
+      {stdout, _stderr} = scan_io("basic", format: "github")
+
+      assert stdout =~
+               "::warning file=test/fixtures/apps/basic/config/prod.secret.exs," <>
+                 "line=1,endLine=1,col=1::" <>
+                 "Sobelow: Config.HSTS: HSTS Not Enabled (medium confidence)"
+    end
+
+    test "github emits nothing when there are no findings" do
+      all_categories = ~w(XSS SQL Traversal RCE Misc Config CI DOS Vuln)
+
+      {stdout, _stderr} = scan_io("basic", format: "github", ignored: all_categories)
+
+      assert stdout == ""
+    end
+
     test "sarif emits one result per finding with a rule id" do
       {stdout, _stderr} = scan_io("basic", format: "sarif")
 

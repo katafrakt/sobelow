@@ -75,8 +75,68 @@ defmodule Sobelow.FindingLog do
     end
   end
 
+  def github do
+    %{high: highs, medium: meds, low: lows} = log()
+
+    (highs ++ meds ++ lows)
+    |> sort_findings()
+    |> Enum.map_join("\n", &format_github/1)
+    |> case do
+      "" -> nil
+      text -> text
+    end
+  end
+
   defp total(%{high: highs, medium: meds, low: lows}) do
     length(highs) + length(meds) + length(lows)
+  end
+
+  defp format_github({_details, finding, _custom_metadata}) do
+    properties = github_properties(finding)
+
+    message =
+      "Sobelow: #{finding.type} (#{finding.confidence} confidence)"
+      |> escape_data()
+
+    "::warning #{properties}::#{message}"
+  end
+
+  defp github_properties(finding) do
+    line = positive_integer(finding.vuln_line_no)
+    column = positive_integer(finding.vuln_col_no)
+
+    properties =
+      [
+        {"file", relative_filename(finding.filename)},
+        {"line", line},
+        {"endLine", line},
+        {"col", column}
+      ]
+
+    properties
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    |> Enum.map_join(",", fn {key, value} -> "#{key}=#{escape_property(value)}" end)
+  end
+
+  defp relative_filename(nil), do: nil
+  defp relative_filename(filename), do: Path.relative_to_cwd(filename)
+
+  defp positive_integer(value) when is_integer(value) and value > 0, do: value
+  defp positive_integer(_value), do: 1
+
+  defp escape_data(value) do
+    value
+    |> to_string()
+    |> String.replace("%", "%25")
+    |> String.replace("\r", "%0D")
+    |> String.replace("\n", "%0A")
+  end
+
+  defp escape_property(value) do
+    value
+    |> escape_data()
+    |> String.replace(":", "%3A")
+    |> String.replace(",", "%2C")
   end
 
   def init(:ok) do

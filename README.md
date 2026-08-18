@@ -122,8 +122,8 @@ relative to the application root.
   * `--threshold` - Return findings at or above a confidence level
   of `low` (default), `medium`, or `high`.
 
-  * `--format` or `-f` - Specify findings output format. Accepts a format,
-  e.g. `txt` or `json`.
+  * `--format` or `-f` - Specify findings output format. Accepts `txt`, `json`,
+  `sarif`, or `github`.
 
       Note that options such as `--verbose` will not work with the `json` format.
       All `json` formatted findings contain a `type`, `file`, and `line` key.

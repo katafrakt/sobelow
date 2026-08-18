@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+  * Enhancements
+    * Added a `github` output format that emits GitHub Actions workflow
+      annotations for findings.
+
 ## v0.15.0
   * Bug fixes
     * `Config.Secrets` no longer crashes the scan when a secret is written as
