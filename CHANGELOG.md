@@ -5,6 +5,8 @@
   * Enhancements
     * Add `DOS.DecodeAtoms` for dynamic input decoded with atom-creating options
       in Jason, Poison, and YamlElixir string readers.
+    * Add `DOS.Consult` for dynamic file selection in `:file.consult/1` and
+      `:file.path_consult/2`, which can create atoms from untrusted term files.
 
   * Bug fixes
     * Lockfile dependency advisories now read lockfiles in the format Mix
